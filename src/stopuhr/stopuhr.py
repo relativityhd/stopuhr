@@ -1,6 +1,5 @@
 """Very high level benchmarking contextmanager."""
 
-import logging
 import time
 from collections import defaultdict
 from contextlib import contextmanager
@@ -76,15 +75,14 @@ class StopUhr:
 
     """
 
-    def __init__(self, logger: logging.Logger | None = None):
+    def __init__(self, printer: callable = print):
         """StopUhr: a very high level benchmarking contextmanager.
 
         Args:
-            logger (logging.Logger | None, optional): A logger to print the output to instead of stdout.
-                Defaults to None.
+            printer (callable, optional): The function to print with. Defaults to print.
 
         """
-        self.printer = logger.debug if logger else print
+        self.printer = printer
         self.reset()
 
     def reset(self):
@@ -122,7 +120,7 @@ class StopUhr:
                 continue
 
             if len(values) == 1:
-                self.printer(f"{key} took {values[0]:.{res}f}Ws")
+                self.printer(f"{key} took {values[0]:.{res}f}s")
                 continue
 
             n = len(values)
