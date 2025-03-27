@@ -1,6 +1,5 @@
 """Very high level benchmarking decorator."""
 
-import logging
 from typing import TYPE_CHECKING
 
 from stopuhr.stopuhr import StopUhr, stopuhr
@@ -36,15 +35,14 @@ class FunkUhr:
 
     """
 
-    def __init__(self, logger: logging.Logger | None = None):
+    def __init__(self, printer: callable = print):
         """FunkUhr: a very high level benchmarking decorator.
 
         Args:
-            logger (logging.Logger | None, optional): A logger to print the output to instead of stdout.
-                Defaults to None.
+            printer (callable, optional): The function to print with. Defaults to print.
 
         """
-        self.stopuhr = StopUhr(logger)
+        self.stopuhr = StopUhr(printer)
 
     def export(self) -> "pd.DataFrame":
         """Export the durations as a pandas DataFrame.
