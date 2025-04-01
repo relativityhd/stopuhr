@@ -58,7 +58,10 @@ select = [
 ]
 
 [dependency-groups]
-dev = ["ruff>=0.11.2"]
+dev = [
+    "ipykernel>=6.29.5",
+    "ruff>=0.11.2",
+]
 docs = [
     "matplotlib>=3.10.1",
     "numpydoc>=1.8.0",
