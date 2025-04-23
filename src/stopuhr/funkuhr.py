@@ -3,6 +3,7 @@
 from collections.abc import Callable
 from inspect import Signature, signature
 from typing import TYPE_CHECKING, Any, Literal
+from warnings import deprecated
 
 from stopuhr.stopuhr import StopUhr, stopuhr
 
@@ -31,6 +32,7 @@ def _get_bound_args(sig: Signature, *args, **kwargs) -> dict[str, Any]:
     return bound_args
 
 
+@deprecated("FunkUhr is deprecated. Use Chronometer instead.")
 class FunkUhr:
     """Very high level benchmarking decorator.
 
@@ -59,6 +61,7 @@ class FunkUhr:
         Like the stateless decorator, it is possible to add arguments to the message.
 
         .. code-block:: python
+
             >>> from stopuhr import FunkUhr
 
             >>> funkuhr = FunkUhr()
@@ -76,6 +79,7 @@ class FunkUhr:
         It is also possible to add all arguments to the message.
 
         .. code-block:: python
+
             >>> from stopuhr import FunkUhr
 
             >>> funkuhr = FunkUhr()
@@ -181,6 +185,7 @@ class FunkUhr:
         return _decorator
 
 
+@deprecated("funkuhr is deprecated. Use stopwatch instead.")
 def funkuhr(msg: str, printer: callable = print, res: int = 2, print_kwargs: list[str] | bool = False):
     """Decorate a function to measure the time taken in a block.
 
@@ -201,6 +206,7 @@ def funkuhr(msg: str, printer: callable = print, res: int = 2, print_kwargs: lis
         It is possible to add arguments to the message.
 
         .. code-block:: python
+
             >>> from stopuhr import funkuhr
 
             >>> @funkuhr("Busy Function", print_kwargs=["arg1", "arg2"])
@@ -213,6 +219,7 @@ def funkuhr(msg: str, printer: callable = print, res: int = 2, print_kwargs: lis
         It is also possible to add all arguments to the message.
 
         .. code-block:: python
+
             >>> from stopuhr import funkuhr
 
             >>> @funkuhr("Busy Function", print_kwargs=True)

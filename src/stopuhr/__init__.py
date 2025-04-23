@@ -2,6 +2,7 @@
 
 import importlib.metadata
 
+from stopuhr.chrono import Chronometer, stopwatch
 from stopuhr.funkuhr import FunkUhr, funkuhr
 from stopuhr.stopuhr import StopUhr, stopuhr
 
@@ -10,4 +11,4 @@ try:
 except importlib.metadata.PackageNotFoundError:
     __version__ = "0.0.0"
 
-__all__ = ["FunkUhr", "StopUhr", "funkuhr", "stopuhr"]
+__all__ = ["Chronometer", "FunkUhr", "StopUhr", "funkuhr", "stopuhr", "stopwatch"]

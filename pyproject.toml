@@ -57,11 +57,11 @@ select = [
     "RUF",
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["D"]
+
 [dependency-groups]
-dev = [
-    "ipykernel>=6.29.5",
-    "ruff>=0.11.2",
-]
+dev = ["ipykernel>=6.29.5", "ruff>=0.11.2"]
 docs = [
     "matplotlib>=3.10.1",
     "numpydoc>=1.8.0",
@@ -71,3 +71,4 @@ docs = [
     "sphinx-design>=0.6.1",
     "sphinx-gallery>=0.18.0",
 ]
+tests = ["pytest>=8.3.5"]

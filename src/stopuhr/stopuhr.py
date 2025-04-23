@@ -5,11 +5,13 @@ from collections import defaultdict
 from contextlib import contextmanager
 from statistics import mean, stdev
 from typing import TYPE_CHECKING
+from warnings import deprecated
 
 if TYPE_CHECKING:
     import pandas as pd
 
 
+@deprecated("StopUhr is deprecated. Use Chronometer instead.")
 class StopUhr:
     """Very high level benchmarking contextmanager.
 
@@ -176,6 +178,7 @@ class StopUhr:
 
 
 @contextmanager
+@deprecated("stopuhr is deprecated. Use stopwatch instead.")
 def stopuhr(msg: str, printer: callable = print, res: int = 2):
     """Context manager to measure the time taken in a block.
 

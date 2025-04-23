@@ -21,11 +21,20 @@ uv add stopuhr
 With stopuhr it is convinient to measure durations in Python:
 
 ```python
-from stopuhr import stopuhr
+import time
+from stopuhr import stopwatch
 
-with stopuhr("My Timer"):
+with stopwatch("My Timer"):
     # Do something
-    pass
+    time.sleep(2)
+>>> My Timer took 2.00s
+
+@stopwatch("My Timer")
+def my_function():
+    # Do something
+    time.sleep(2)
+
+>>> My Timer took 2.00s
 ```
 
-For a stateful version, a decorator or a stateful decorator please visit the Reference or have a look at the examples.
+This library can much more than that. Visit the reference or example section for more details.

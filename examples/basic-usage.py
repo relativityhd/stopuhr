@@ -12,9 +12,18 @@ This is a basic usage example of the `stopuhr` package.
 # Stop the time with a simple context manager and print the duration.
 import time
 
-from stopuhr import stopuhr
+import stopuhr
 
-with stopuhr("Sleeping"):
+timer = stopuhr.Chronometer()
+
+with timer("Sleeping"):
+    time.sleep(0.1)
+
+# %%
+# stopuhr also provides a default instance of the `Chronometer` class, which is called `stopwatch`.
+from stopuhr import stopwatch
+
+with stopwatch("Sleeping"):
     time.sleep(0.1)
 
 # %%
@@ -27,68 +36,79 @@ handler = logging.StreamHandler()
 handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
 logger.addHandler(handler)
 
-with stopuhr("Sleeping", printer=logger.info):
+with stopwatch("Sleeping", printer=logger.info):
     time.sleep(0.1)
 
 # %%
 # By default, the output is rounded to two decimal places. This can be changed with the `res` argument.
-with stopuhr("Sleeping", res=3):
+with stopwatch("Sleeping", res=3):
     time.sleep(0.16189)
 
+# %%
+# We can change the default behaviour by passing the arguments to the `__init__` method of the `Chronometer` class.
+timer = stopuhr.Chronometer(printer=logger.info, res=3)
+with timer("Sleeping"):
+    time.sleep(0.16189)
 
 # %%
-# Use a stateful timer to measure the time taken in a loop.
+# Since `stopwatch` is just a `Chronometer` instance, we can just overwrite the default behaviour.
+stopwatch.res = 3
+with stopwatch("Sleeping"):
+    time.sleep(0.16189)
+stopwatch.res = 2  # back to default
+
+# %%
+# The `Chronometer` class is stateful, meaning that it can be used to measure multiple durations at once.
 # This also supports the `printer` and `res` arguments.
 # The `log` argument of each call can be used to suppress the output.
-from stopuhr import StopUhr
-
-stopuhr = StopUhr()
 
 for i in range(5):
-    with stopuhr("Sleeping", log=False):
+    with stopwatch("Sleeping", log=False):
         time.sleep(0.2)
 
 # Print a summary with the mean and standard deviation of the durations.
-stopuhr.summary()
+stopwatch.summary()
 
 # %%
-# The `reset`` command resets the state of the timer, note that this function is happening in-place.
-stopuhr.reset()
+# This summary used also the previous calls to the `stopwatch` function to calculate the mean.
+# We can reset it's state with the `reset` method, note that this is happening in-place.
+stopwatch.reset()
 
 # %%
-# The previous behavior can be achieved with the `start` and `stop` methods.
-# Here, the `stop` method also supports the `log` and `res` arguments.
+# The previous behavior can also be achieved with the `start` and `stop` methods.
+# Here, the `stop` method also supports the `printer`, `log` and `res` arguments.
 for i in range(5):
-    stopuhr.start("Sleeping")
+    stopwatch.start("Sleeping")
     time.sleep(0.2)
-    stopuhr.stop("Sleeping", log=False)
+    stopwatch.stop("Sleeping", log=False)
 
-stopuhr.summary()
+stopwatch.summary()
 
 # %%
-# The stateful timer can also measure multiple durations at once.
+# The Chronometer can also measure multiple durations at once, thanks to that feature.
 
-stopuhr.reset()
+stopwatch.reset()
 
 # Single duration
-with stopuhr("A (single 0.2s sleep)", log=False):
+with stopwatch("A (single 0.2s sleep)", log=False):
     time.sleep(0.2)
 
 for i in range(5):
-    with stopuhr("B (multiple 0.2s sleeps)", log=False):
+    with stopwatch("B (multiple 0.2s sleeps)", log=False):
         time.sleep(0.2)
-    with stopuhr("C (multiple 0.1s sleeps)", log=False):
+    with stopwatch("C (multiple 0.1s sleeps)", log=False):
         time.sleep(0.1)
 
-stopuhr.summary()
+stopwatch.summary()
 
 # %%
-# A stateless decorator can be used to measure the duration of a function.
-# The decorator expects a message / key, just like the others and also supports the `printer` and `res` arguments.
-from stopuhr import funkuhr
+# Because the `Chronometer`'s `__call__` method is a `@contextmanager`, it can be used as a decorator.
+# This takes the same arguments as the context manager (`res`, `log` and `printer`).
+
+stopwatch.reset()
 
 
-@funkuhr("Busy Function")
+@stopwatch("Busy Function")
 def busy_function():
     time.sleep(0.2)
 
@@ -96,14 +116,12 @@ def busy_function():
 busy_function()
 
 # %%
-# A stateful decorator exists as well, which is just a wrapper around the stateful timer.
-# It supports the same arguments as the stateful timer.
-from stopuhr import FunkUhr
+# Of course, this can be used to measure multiple functions at once.
 
-funkuhr = FunkUhr()
+stopwatch.reset()
 
 
-@funkuhr("Busy Function", log=False)
+@stopwatch("Busy Function", log=False)
 def busy_function():
     time.sleep(0.1)
 
@@ -111,4 +129,4 @@ def busy_function():
 for i in range(5):
     busy_function()
 
-funkuhr.summary()
+stopwatch.summary()
