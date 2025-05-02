@@ -5,7 +5,7 @@ from collections import defaultdict
 from contextlib import contextmanager
 from statistics import mean, stdev
 from typing import TYPE_CHECKING
-from warnings import deprecated
+from typing_extensions import deprecated
 
 if TYPE_CHECKING:
     import pandas as pd

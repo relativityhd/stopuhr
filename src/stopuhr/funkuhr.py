@@ -3,7 +3,7 @@
 from collections.abc import Callable
 from inspect import Signature, signature
 from typing import TYPE_CHECKING, Any, Literal
-from warnings import deprecated
+from typing_extensions import deprecated
 
 from stopuhr.stopuhr import StopUhr, stopuhr
 
