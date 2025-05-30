@@ -52,7 +52,7 @@ def test_summary():
         time.sleep(0.2)
 
     out = []
-    stopwatch.summary(printer=out.append, res=1)
+    timer.summary(printer=out.append, res=1)
     assert out[0] == "test took 0.2 ± 0.1s (n=2 -> total=0.4s)"
     assert out[1] == "test2 took 0.2s"
 

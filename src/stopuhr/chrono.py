@@ -198,6 +198,42 @@ class Chronometer:
         self.log = log
         self.reset()
 
+    @property
+    def printer(self) -> Printer:
+        """Get the printer function."""
+        return self._printer
+
+    @printer.setter
+    def printer(self, value: Printer):
+        """Set the printer function."""
+        if not callable(value):
+            raise ValueError("printer must be a callable function")
+        self._printer = value
+
+    @property
+    def res(self) -> int:
+        """Get the default number of decimal places to round to."""
+        return self._res
+
+    @res.setter
+    def res(self, value: int):
+        """Set the default number of decimal places to round to."""
+        if not isinstance(value, int) or value < 0:
+            raise ValueError("res must be a non-negative integer")
+        self._res = value
+
+    @property
+    def log(self) -> bool:
+        """Get the default log setting."""
+        return self._log
+
+    @log.setter
+    def log(self, value: bool):
+        """Set the default log setting."""
+        if not isinstance(value, bool):
+            raise ValueError("log must be a boolean value")
+        self._log = value
+
     def reset(self):
         """Reset the durations."""
         self.durations: dict[str, list[float]] = defaultdict(list)
