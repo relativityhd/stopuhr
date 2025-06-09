@@ -503,7 +503,7 @@ class Chronometer:
                     bound_args_msg = ", ".join(f"{k}={v}" for k, v in bound_args.items())
                     _inner_key += f" (with {bound_args_msg})"
 
-                with self(_inner_key, res=res, log=log):
+                with self(_inner_key, res=res, log=log, printer=printer):
                     return func(*args, **kwargs)
 
             return _inner
