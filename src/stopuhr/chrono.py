@@ -234,6 +234,75 @@ class Chronometer:
             raise ValueError("log must be a boolean value")
         self._log = value
 
+    def parse_printer(self, printer: Printer | None) -> Printer:
+        """Parse the printer argument.
+
+        If the printer is None, return the default printer.
+        If the printer is a callable, return it.
+        Otherwise, raise an error.
+
+        Args:
+            printer (Printer | None): The printer to use.
+
+        Returns:
+            Printer: The printer to use.
+
+        Raises:
+            ValueError: If the printer is not a callable or None.
+
+        """
+        if printer is None:
+            return self.printer
+        if not callable(printer):
+            raise ValueError("printer must be a callable function or None")
+        return printer
+
+    def parse_res(self, res: int | None) -> int:
+        """Parse the res argument.
+
+        If res is None, return the default res.
+        If res is an int, return it.
+        Otherwise, raise an error.
+
+        Args:
+            res (int | None): The number of decimal places to round to.
+
+        Returns:
+            int: The number of decimal places to round to.
+
+        Raises:
+            ValueError: If res is not an int or None.
+
+        """
+        if res is None:
+            return self.res
+        if not isinstance(res, int) or res < 0:
+            raise ValueError("res must be a non-negative integer or None")
+        return res
+
+    def parse_log(self, log: bool | None) -> bool:
+        """Parse the log argument.
+
+        If log is None, return the default log setting.
+        If log is a bool, return it.
+        Otherwise, raise an error.
+
+        Args:
+            log (bool | None): Whether to log the duration at occurence.
+
+        Returns:
+            bool: Whether to log the duration at occurence.
+
+        Raises:
+            ValueError: If log is not a boolean or None.
+
+        """
+        if log is None:
+            return self.log
+        if not isinstance(log, bool):
+            raise ValueError("log must be a boolean value or None")
+        return log
+
     def reset(self):
         """Reset the durations."""
         self.durations: dict[str, list[float]] = defaultdict(list)
@@ -300,7 +369,7 @@ class Chronometer:
 
         return combined
 
-    def summary(self, res: int | None = None, printer: Printer | None = None):
+    def summary(self, *, res: int | None = None, printer: Printer | None = None):
         """Print a summary of the durations.
 
         Args:
@@ -310,8 +379,8 @@ class Chronometer:
                  Defaults to None.
 
         """
-        res = res or self.res
-        printer = printer or self.printer
+        res = self.parse_res(res)
+        printer = self.parse_printer(printer)
         for key, values in self.durations.items():
             if not values:
                 printer(f"{key} has no durations recorded")
@@ -334,9 +403,10 @@ class Chronometer:
             key (str): The msg / key to store the start time under.
 
         """
+        assert isinstance(key, str), "key must be a string"
         self.idling_starts[key].append(time.perf_counter())
 
-    def stop(self, key: str, res: int | None = None, log: bool | None = None, printer: Printer | None = None):
+    def stop(self, key: str, *, res: int | None = None, log: bool | None = None, printer: Printer | None = None):
         """Stop the timer for a key.
 
         Args:
@@ -349,9 +419,10 @@ class Chronometer:
                  Defaults to None.
 
         """
-        res = res or self.res
-        log = log if log is not None else self.log
-        printer = printer or self.printer
+        assert isinstance(key, str), "key must be a string"
+        res = self.parse_res(res)
+        log = self.parse_log(log)
+        printer = self.parse_printer(printer)
         end = time.perf_counter()
         try:
             start = self.idling_starts[key].pop(0)
@@ -365,6 +436,7 @@ class Chronometer:
     def f(
         self,
         key: str,
+        *,
         res: int | None = None,
         log: bool | None = None,
         printer: Printer | None = None,
@@ -396,9 +468,10 @@ class Chronometer:
             ValueError: If any of the print_kwargs are not in the functions signature.
 
         """
-        res = res or self.res
-        log = log if log is not None else self.log
-        printer = printer or self.printer
+        assert isinstance(key, str), "key must be a string"
+        res = self.parse_res(res)
+        log = self.parse_log(log)
+        printer = self.parse_printer(printer)
 
         def _decorator(func):
             func_signature = signature(func)
@@ -441,6 +514,7 @@ class Chronometer:
     def __call__(
         self,
         key: str,
+        *,
         res: int | None = None,
         log: bool | None = None,
         printer: Printer | None = None,
