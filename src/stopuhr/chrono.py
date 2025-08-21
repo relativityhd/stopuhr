@@ -532,8 +532,10 @@ class Chronometer:
 
         """
         self.start(key)
-        yield
-        self.stop(key, res=res, log=log, printer=printer)
+        try:
+            yield
+        finally:
+            self.stop(key, res=res, log=log, printer=printer)
 
 
 stopwatch = Chronometer()
