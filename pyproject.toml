@@ -61,7 +61,7 @@ select = [
 "tests/*" = ["D"]
 
 [dependency-groups]
-dev = ["ipykernel>=6.29.5", "ruff>=0.11.2"]
+dev = ["ipykernel>=6.29.5", "ruff>=0.15.5", "ty>=0.0.21"]
 docs = [
     "matplotlib>=3.10.1",
     "numpydoc>=1.8.0",

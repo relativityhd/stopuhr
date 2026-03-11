@@ -24,7 +24,7 @@ sleep(0.1)
 
 # %%
 # If some parameters should not be printed,
-# we can use the `print_kwargs` argument.to select which ones should be printed.
+# we can use the `print_kwargs` argument to select which ones should be printed.
 
 
 @stopwatch.f("Sleeping", print_kwargs=["seconds"])

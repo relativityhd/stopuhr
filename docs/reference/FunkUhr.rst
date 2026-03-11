@@ -1,4 +1,0 @@
-FunkUhr
-=================
-
-.. autoclass:: stopuhr.FunkUhr

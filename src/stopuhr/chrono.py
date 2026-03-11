@@ -2,18 +2,20 @@
 
 import time
 from collections import defaultdict
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from inspect import Signature, signature
 from statistics import mean, stdev
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, ParamSpec, TypeVar, cast, overload
 
 if TYPE_CHECKING:
     import pandas as pd
 
 
-# Pritner signature
+# Types and Signatures
 Printer = Callable[[str], None]
+P = ParamSpec("P")
+R = TypeVar("R")
 
 
 def _get_bound_args(sig: Signature, *args, **kwargs) -> dict[str, Any]:
@@ -344,7 +346,17 @@ class Chronometer:
             self.durations[key].extend(values)
 
     @staticmethod
-    def combine(*timers: "Chronometer") -> "Chronometer":
+    @overload
+    def combine(*timers: "Chronometer") -> "Chronometer": ...
+
+    @staticmethod
+    @overload
+    def combine(timers: "list[Chronometer] | tuple[Chronometer, ...]") -> "Chronometer": ...
+
+    @staticmethod
+    def combine(
+        *timers: "Chronometer | list[Chronometer] | tuple[Chronometer, ...]",
+    ) -> "Chronometer":
         """Combine multiple Chronometers into one.
 
         This is handy for multiprocessing situations.
@@ -357,11 +369,13 @@ class Chronometer:
             Chronometer: A new Chronometer with the combined durations.
 
         """
-        # Check if the first input is a list of Chronometers
-        if isinstance(timers[0], list):
-            timers = timers[0]
-        assert all(isinstance(t, Chronometer) for t in timers), "all timers must be Chronometers"
         assert len(timers) > 0, "at least one timer must be provided"
+        # Check if the first input is a list of Chronometers
+        if isinstance(timers[0], list | tuple):
+            timers = cast(tuple[Chronometer, ...], tuple(timers[0]))
+        else:
+            timers = cast(tuple[Chronometer, ...], timers)
+        assert all(isinstance(t, Chronometer) for t in timers), "all timers must be Chronometers"
 
         combined = Chronometer(printer=timers[0].printer, res=timers[0].res, log=timers[0].log)
         for timer in timers:
@@ -441,7 +455,7 @@ class Chronometer:
         log: bool | None = None,
         printer: Printer | None = None,
         print_kwargs: list[str] | Literal["all"] | None = "all",
-    ):
+    ) -> Callable[[Callable[P, R]], Callable[P, R]]:
         """Advanced decorator to also print the function arguments.
 
         Instead of just passing the normal `{key} took {duration:.{res}f}s` message,
@@ -458,11 +472,11 @@ class Chronometer:
                 Defaults to None.
             printer (Callable[[str], None] | None, optional): Override the objects function to print with if not None.
                  Defaults to None.
-            print_kwargs (list[str] | bool, optional): The arguments to be added to the `key`.
+            print_kwargs (list[str] | Literal["all"] | None, optional): The arguments to be added to the `key`.
                 If a list, only the arguments in the list will be added to the message.
-                If True, all arguments will added. If False, no arguments will be added.
+                If "all", all arguments are added. If None, no arguments are added.
                 Additions to the message will have the form: f"{key} (with {arg1=val1, arg2=val2, ...})".
-                Defaults to False.
+                Defaults to "all".
 
         Raises:
             ValueError: If any of the print_kwargs are not in the functions signature.
@@ -473,24 +487,25 @@ class Chronometer:
         log = self.parse_log(log)
         printer = self.parse_printer(printer)
 
-        def _decorator(func):
+        def _decorator(func: Callable[P, R]) -> Callable[P, R]:
             func_signature = signature(func)
+            func_name = getattr(func, "__name__", repr(func))
             # Check if any of the print_kwargs are not in the functions signature and raise an error if so
             if isinstance(print_kwargs, list) and any(
                 k not in func_signature.parameters for k in print_kwargs if isinstance(print_kwargs, list)
             ):
                 raise ValueError(
-                    f"Not all {print_kwargs=} found in {func_signature.parameters=} of function {func.__name__}"
+                    f"Not all {print_kwargs=} found in {func_signature.parameters=} of function {func_name}"
                 )
 
-            def _inner(*args, **kwargs):
+            def _inner(*args: P.args, **kwargs: P.kwargs) -> R:
                 _inner_key = key
 
                 if isinstance(print_kwargs, list):
                     bound_args = _get_bound_args(func_signature, *args, **kwargs)
                     # Check if any of the print_kwargs are not in bound_args and raise an error if so
                     if any(k not in bound_args for k in print_kwargs):
-                        raise ValueError(f"Not all {print_kwargs=} found in {bound_args=} of function {func.__name__}")
+                        raise ValueError(f"Not all {print_kwargs=} found in {bound_args=} of function {func_name}")
 
                     # Filter by print_kwargs
                     bound_args = {k: bound_args[k] for k in print_kwargs if k in bound_args}
@@ -518,7 +533,7 @@ class Chronometer:
         res: int | None = None,
         log: bool | None = None,
         printer: Printer | None = None,
-    ):
+    ) -> Iterator[None]:
         """Context manager and decorator to measure the time taken in a block or function.
 
         Args:
@@ -531,6 +546,7 @@ class Chronometer:
                  Defaults to None.
 
         """
+        assert isinstance(key, str), "key must be a string"
         self.start(key)
         try:
             yield
@@ -538,6 +554,6 @@ class Chronometer:
             self.stop(key, res=res, log=log, printer=printer)
 
 
-stopwatch = Chronometer()
+stopwatch: Chronometer = Chronometer()
 
 __all__ = ["Chronometer", "stopwatch"]
